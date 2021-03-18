@@ -21,6 +21,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
+import org.springframework.messaging.MessageHandlingException;
 
 import javax.annotation.PostConstruct;
 import java.util.List;
@@ -38,6 +39,15 @@ public class SampleFolderRuleApplication {
 
     public static void main(final String[] args) {
         SpringApplication.run(SampleFolderRuleApplication.class, args);
+    }
+
+    @Bean
+    public IntegrationFlow logError() {
+        return IntegrationFlows.from(EventChannels.ERROR).handle(t -> {
+            LOGGER.info("Error: {}", t.getPayload().toString());
+            MessageHandlingException exception = (MessageHandlingException) t.getPayload();
+            exception.printStackTrace();
+        }).get();
     }
 
     /**
